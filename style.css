@@ -1,0 +1,35 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f0f5;
+  padding: 20px;
+  direction: rtl;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+.tool {
+  background: white;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+input, textarea, select, button {
+  padding: 10px;
+  margin-top: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.output {
+  margin-top: 10px;
+  padding: 10px;
+  background: #eaeaea;
+  border-radius: 8px;
+  font-family: monospace;
+}

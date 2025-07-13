@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>Ê״ָםÞ ַבֳֿזַÊ ַבדÝםֹֿ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>?? Ê״ָםÞ ַבֳֿזַÊ ַבדÝםֹֿ</h1>
+
+<div class="tool">
+  <h2>?? דזבֿ ßבדַÊ ַב׃ׁ</h2>
+  <button onclick="generatePassword()">Êזבםֿ ßבדֹ ׃ׁ</button>
+  <div class="output" id="passwordOutput"></div>
+</div>
+
+<div class="tool">
+  <h2>?? ַבַֽ׃ָֹ</h2>
+  <input type="text" id="calcInput" placeholder="ַßÊָ ַבÚדבםֹ דֻב 5+10*2">
+  <button onclick="calculate()">ַֽ׃ָ</button>
+  <div class="output" id="calcOutput"></div>
+</div>
+
+<div class="tool">
+  <h2>?? דÚַםֹׁ ַבֳבזַה</h2>
+  <input type="color" id="colorPicker" onchange="showColor()">
+  <div class="output" id="colorOutput">ַ־Êׁ בזהנַ</div>
+</div>
+
+<div class="tool">
+  <h2>?? Úß׃ ַבֳֽׁÝ</h2>
+  <input type="text" id="reverseInput" placeholder="ַßÊָ הױנַ">
+  <button onclick="reverseText()">ַÚß׃ ַבהױ</button>
+  <div class="output" id="reverseOutput"></div>
+</div>
+
+<div class="tool">
+  <h2>?? Êֽזםב ֵבל Base64</h2>
+  <input type="text" id="base64Input" placeholder="ַßÊָ הױנַ">
+  <button onclick="convertToBase64()">Êֽזםב</button>
+  <div class="output" id="base64Output"></div>
+</div>
+
+<div class="tool">
+  <h2>?? Úַֿֿ ַבßבדַÊ</h2>
+  <textarea id="wordCountInput" rows="4" placeholder="ַßÊָ הױנַ והַ"></textarea>
+  <button onclick="countWords()">Úֿֿ ַבßבדַÊ</button>
+  <div class="output" id="wordCountOutput"></div>
+</div>
+
+<div class="tool">
+  <h2>? ַב׃ַÚֹ</h2>
+  <div class="output" id="clockOutput">--:--:--</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
