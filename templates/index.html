@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Background Remover</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-magic"></i> AI Background Remover</h1>
+            <p>Remove backgrounds from images with state-of-the-art AI models</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Model Information -->
+            <div class="model-info">
+                <h4><i class="fas fa-info-circle"></i> Model Information</h4>
+                <p>This tool uses state-of-the-art models including RMBG 2.0 (BRIA AI) and BiRefNet for professional-grade background removal.</p>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">
+                    Drag and drop an image here or click to browse
+                </div>
+                <input type="file" id="imageInput" class="file-input" accept="image/*">
+                <button class="btn" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-folder-open"></i> Choose Image
+                </button>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="control-group">
+                    <label for="modelSelect">
+                        <i class="fas fa-robot"></i> AI Model
+                    </label>
+                    <select id="modelSelect">
+                        <option value="rmbg2">RMBG 2.0 (Best Quality)</option>
+                        <option value="birefnet">BiRefNet (Open Source)</option>
+                    </select>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="enhanceEdges" checked>
+                        <label for="enhanceEdges">Enhance Edges</label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label for="featherAmount">
+                        <i class="fas fa-feather"></i> Edge Feathering 
+                        <span class="range-value" id="featherValue">0</span>
+                    </label>
+                    <input type="range" id="featherAmount" min="0" max="5" step="0.1" value="0">
+                </div>
+
+                <div class="control-group">
+                    <button class="btn" id="processBtn" onclick="processImage()" disabled>
+                        <i class="fas fa-wand-magic-sparkles"></i> Remove Background
+                    </button>
+                </div>
+            </div>
+
+            <!-- Processing Indicator -->
+            <div class="processing" id="processing">
+                <div class="spinner"></div>
+                <p>Processing your image...</p>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div id="messages"></div>
+
+            <!-- Results -->
+            <div class="results" id="results" style="display: none;">
+                <div class="result-card">
+                    <h3><i class="fas fa-image"></i> Original Image</h3>
+                    <div class="image-container">
+                        <img id="originalImage" alt="Original">
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3><i class="fas fa-cut"></i> Background Removed</h3>
+                    <div class="image-container">
+                        <img id="resultImage" alt="Result">
+                    </div>
+                    <button class="btn" onclick="downloadResult()">
+                        <i class="fas fa-download"></i> Download PNG
+                    </button>
+                </div>
+
+                <div class="result-card">
+                    <h3><i class="fas fa-mask"></i> Alpha Mask</h3>
+                    <div class="image-container">
+                        <img id="maskImage" alt="Mask">
+                    </div>
+                    <button class="btn" onclick="downloadMask()">
+                        <i class="fas fa-download"></i> Download Mask
+                    </button>
+                </div>
+            </div>
+
+            <!-- Advanced Controls -->
+            <div class="advanced-controls" id="advancedControls" style="display: none;">
+                <h3><i class="fas fa-sliders-h"></i> Advanced Mask Editing</h3>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="dilateIterations">
+                            Expand Mask <span class="range-value" id="dilateValue">1</span>
+                        </label>
+                        <input type="range" id="dilateIterations" min="0" max="5" value="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="erodeIterations">
+                            Contract Mask <span class="range-value" id="erodeValue">1</span>
+                        </label>
+                        <input type="range" id="erodeIterations" min="0" max="5" value="1">
+                    </div>
+                    <div class="control-group">
+                        <button class="btn" onclick="refineMask()">
+                            <i class="fas fa-magic"></i> Refine Mask
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batch Processing -->
+            <div class="batch-upload">
+                <h3><i class="fas fa-layer-group"></i> Batch Processing</h3>
+                <p>Upload multiple images for batch background removal</p>
+                <input type="file" id="batchInput" multiple accept="image/*" style="display: none;">
+                <button class="btn" onclick="document.getElementById('batchInput').click()">
+                    <i class="fas fa-images"></i> Select Multiple Images
+                </button>
+                <button class="btn" id="batchProcessBtn" onclick="processBatch()" disabled>
+                    <i class="fas fa-play"></i> Process Batch
+                </button>
+                
+                <div class="batch-results" id="batchResults"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Global variables
+        let currentImage = null;
+        let currentMask = null;
+        let resultImageData = null;
+        let batchFiles = [];
+
+        // API base URL
+        const API_BASE = '';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            checkServerHealth();
+        });
+
+        function setupEventListeners() {
+            // File input listeners
+            document.getElementById('imageInput').addEventListener('change', handleImageUpload);
+            document.getElementById('batchInput').addEventListener('change', handleBatchUpload);
+            
+            // Drag and drop
+            const uploadSection = document.getElementById('uploadSection');
+            uploadSection.addEventListener('dragover', handleDragOver);
+            uploadSection.addEventListener('dragleave', handleDragLeave);
+            uploadSection.addEventListener('drop', handleDrop);
+            
+            // Range input listeners
+            document.getElementById('featherAmount').addEventListener('input', updateRangeValue);
+            document.getElementById('dilateIterations').addEventListener('input', updateRangeValue);
+            document.getElementById('erodeIterations').addEventListener('input', updateRangeValue);
+        }
+
+        function updateRangeValue(event) {
+            const input = event.target;
+            const valueSpan = document.getElementById(input.id.replace('Iterations', 'Value').replace('Amount', 'Value'));
+            if (valueSpan) {
+                valueSpan.textContent = input.value;
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    loadImageFile(file);
+                }
+            }
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                loadImageFile(file);
+            }
+        }
+
+        function handleBatchUpload(event) {
+            batchFiles = Array.from(event.target.files);
+            const processBtn = document.getElementById('batchProcessBtn');
+            processBtn.disabled = batchFiles.length === 0;
+            
+            if (batchFiles.length > 0) {
+                showMessage(`Selected ${batchFiles.length} images for batch processing`, 'success');
+            }
+        }
+
+        function loadImageFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImage = e.target.result;
+                document.getElementById('originalImage').src = currentImage;
+                document.getElementById('processBtn').disabled = false;
+                hideResults();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function checkServerHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    showMessage(`Server ready! Available models: ${data.available_models.join(', ')}`, 'success');
+                    updateModelSelect(data.available_models);
+                } else {
+                    showMessage('Server is not healthy', 'error');
+                }
+            } catch (error) {
+                showMessage('Unable to connect to server', 'error');
+            }
+        }
+
+        function updateModelSelect(availableModels) {
+            const select = document.getElementById('modelSelect');
+            const options = select.querySelectorAll('option');
+            
+            options.forEach(option => {
+                if (!availableModels.includes(option.value)) {
+                    option.disabled = true;
+                    option.textContent += ' (Unavailable)';
+                }
+            });
+        }
+
+        async function processImage() {
+            if (!currentImage) {
+                showMessage('Please select an image first', 'error');
+                return;
+            }
+
+            showProcessing();
+            hideResults();
+
+            try {
+                const formData = new FormData();
+                
+                // Convert base64 to blob
+                const response = await fetch(currentImage);
+                const blob = await response.blob();
+                formData.append('image', blob);
+                
+                // Add parameters
+                formData.append('model', document.getElementById('modelSelect').value);
+                formData.append('enhance_edges', document.getElementById('enhanceEdges').checked);
+                formData.append('feather_amount', document.getElementById('featherAmount').value);
+
+                const apiResponse = await fetch(`${API_BASE}/remove-background-json`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await apiResponse.json();
+
+                if (result.success) {
+                    displayResults(result);
+                    showMessage(`Processing completed in ${result.processing_time}s using ${result.model_used}`, 'success');
+                } else {
+                    showMessage(result.error || 'Processing failed', 'error');
+                }
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                hideProcessing();
+            }
+        }
+
+        function displayResults(result) {
+            resultImageData = result.result_image;
+            currentMask = result.mask;
+            
+            document.getElementById('resultImage').src = `data:image/png;base64,${result.result_image}`;
+            document.getElementById('maskImage').src = `data:image/png;base64,${result.mask}`;
+            
+            document.getElementById('results').style.display = 'grid';
+            document.getElementById('advancedControls').style.display = 'block';
+        }
+
+        async function refineMask() {
+            if (!currentMask) {
+                showMessage('No mask available to refine', 'error');
+                return;
+            }
+
+            showProcessing();
+
+            try {
+                const formData = new FormData();
+                
+                // Convert base64 mask to blob
+                const maskBlob = base64ToBlob(currentMask, 'image/png');
+                formData.append('mask', maskBlob);
+                formData.append('dilate_iterations', document.getElementById('dilateIterations').value);
+                formData.append('erode_iterations', document.getElementById('erodeIterations').value);
+
+                const response = await fetch(`${API_BASE}/refine-mask`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const refinedMaskBlob = await response.blob();
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const refinedMask = e.target.result.split(',')[1]; // Remove data:image/png;base64,
+                        currentMask = refinedMask;
+                        document.getElementById('maskImage').src = e.target.result;
+                        
+                        // Reprocess with new mask
+                        applyMaskToOriginal();
+                    };
+                    reader.readAsDataURL(refinedMaskBlob);
+                    
+                    showMessage('Mask refined successfully', 'success');
+                } else {
+                    showMessage('Failed to refine mask', 'error');
+                }
+            } catch (error) {
+                showMessage(`Error refining mask: ${error.message}`, 'error');
+            } finally {
+                hideProcessing();
+            }
+        }
+
+        async function processBatch() {
+            if (batchFiles.length === 0) {
+                showMessage('No files selected for batch processing', 'error');
+                return;
+            }
+
+            showProcessing();
+            document.getElementById('batchResults').innerHTML = '';
+
+            try {
+                const formData = new FormData();
+                batchFiles.forEach(file => {
+                    formData.append('images', file);
+                });
+                formData.append('model', document.getElementById('modelSelect').value);
+                formData.append('enhance_edges', document.getElementById('enhanceEdges').checked);
+
+                const response = await fetch(`${API_BASE}/batch-process`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayBatchResults(result.results);
+                    showMessage(`Batch processing completed: ${result.total_processed} images`, 'success');
+                } else {
+                    showMessage(result.error || 'Batch processing failed', 'error');
+                }
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                hideProcessing();
+            }
+        }
+
+        function displayBatchResults(results) {
+            const container = document.getElementById('batchResults');
+            
+            results.forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'batch-item';
+                
+                if (result.success) {
+                    item.innerHTML = `
+                        <img src="data:image/png;base64,${result.result_image}" alt="Processed">
+                        <div class="filename">${result.filename}</div>
+                        <button class="btn" onclick="downloadBatchItem('${result.result_image}', '${result.filename}')">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <div class="error">Failed to process</div>
+                        <div class="filename">${result.filename}</div>
+                        <div class="error">${result.error}</div>
+                    `;
+                }
+                
+                container.appendChild(item);
+            });
+        }
+
+        function downloadResult() {
+            if (resultImageData) {
+                downloadBase64Image(resultImageData, 'background_removed.png');
+            }
+        }
+
+        function downloadMask() {
+            if (currentMask) {
+                downloadBase64Image(currentMask, 'mask.png');
+            }
+        }
+
+        function downloadBatchItem(imageData, originalFilename) {
+            const filename = `no_bg_${originalFilename}`;
+            downloadBase64Image(imageData, filename);
+        }
+
+        function downloadBase64Image(base64Data, filename) {
+            const link = document.createElement('a');
+            link.href = `data:image/png;base64,${base64Data}`;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function base64ToBlob(base64, mimeType) {
+            const byteCharacters = atob(base64);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            return new Blob([byteArray], { type: mimeType });
+        }
+
+        function applyMaskToOriginal() {
+            // This would require additional processing on the client side
+            // For now, we'll just show the refined mask
+            showMessage('Mask updated. For full reprocessing, please process the image again.', 'success');
+        }
+
+        function showProcessing() {
+            document.getElementById('processing').style.display = 'block';
+        }
+
+        function hideProcessing() {
+            document.getElementById('processing').style.display = 'none';
+        }
+
+        function showResults() {
+            document.getElementById('results').style.display = 'grid';
+        }
+
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('advancedControls').style.display = 'none';
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i> ${message}`;
+            
+            container.innerHTML = '';
+            container.appendChild(messageDiv);
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    if (container.contains(messageDiv)) {
+                        container.removeChild(messageDiv);
+                    }
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
