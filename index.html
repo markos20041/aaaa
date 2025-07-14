@@ -2,56 +2,122 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>ÊØÈíÞ ÇáÃÏæÇÊ ÇáãÝíÏÉ</title>
+  <title>ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>?? ÊØÈíÞ ÇáÃÏæÇÊ ÇáãÝíÏÉ</h1>
+<h1>?? ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h1>
 
 <div class="tool">
-  <h2>?? ãæáÏ ßáãÇÊ ÇáÓÑ</h2>
-  <button onclick="generatePassword()">ÊæáíÏ ßáãÉ ÓÑ</button>
+  <h2>?? ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½</h2>
+  <button onclick="generatePassword()">ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½</button>
   <div class="output" id="passwordOutput"></div>
 </div>
 
 <div class="tool">
-  <h2>?? ÇáÍÇÓÈÉ</h2>
-  <input type="text" id="calcInput" placeholder="ÇßÊÈ ÇáÚãáíÉ ãËá 5+10*2">
-  <button onclick="calculate()">ÇÍÓÈ</button>
+  <h2>?? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h2>
+  <input type="text" id="calcInput" placeholder="ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ 5+10*2">
+  <button onclick="calculate()">ï¿½ï¿½ï¿½ï¿½</button>
   <div class="output" id="calcOutput"></div>
 </div>
 
 <div class="tool">
-  <h2>?? ãÚÇíÑÉ ÇáÃáæÇä</h2>
+  <h2>?? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h2>
   <input type="color" id="colorPicker" onchange="showColor()">
-  <div class="output" id="colorOutput">ÇÎÊÑ áæäðÇ</div>
+  <div class="output" id="colorOutput">ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½</div>
 </div>
 
 <div class="tool">
-  <h2>?? ÚßÓ ÇáÃÍÑÝ</h2>
-  <input type="text" id="reverseInput" placeholder="ÇßÊÈ äÕðÇ">
-  <button onclick="reverseText()">ÇÚßÓ ÇáäÕ</button>
+  <h2>?? ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h2>
+  <input type="text" id="reverseInput" placeholder="ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½">
+  <button onclick="reverseText()">ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½</button>
   <div class="output" id="reverseOutput"></div>
 </div>
 
 <div class="tool">
-  <h2>?? ÊÍæíá Åáì Base64</h2>
-  <input type="text" id="base64Input" placeholder="ÇßÊÈ äÕðÇ">
-  <button onclick="convertToBase64()">ÊÍæíá</button>
+  <h2>?? ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Base64</h2>
+  <input type="text" id="base64Input" placeholder="ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½">
+  <button onclick="convertToBase64()">ï¿½ï¿½ï¿½ï¿½ï¿½</button>
   <div class="output" id="base64Output"></div>
 </div>
 
 <div class="tool">
-  <h2>?? ÚÏÇÏ ÇáßáãÇÊ</h2>
-  <textarea id="wordCountInput" rows="4" placeholder="ÇßÊÈ äÕðÇ åäÇ"></textarea>
-  <button onclick="countWords()">ÚÏÏ ÇáßáãÇÊ</button>
+  <h2>?? ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h2>
+  <textarea id="wordCountInput" rows="4" placeholder="ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½"></textarea>
+  <button onclick="countWords()">ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</button>
   <div class="output" id="wordCountOutput"></div>
 </div>
 
 <div class="tool">
-  <h2>? ÇáÓÇÚÉ</h2>
+  <h2>? ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½</h2>
   <div class="output" id="clockOutput">--:--:--</div>
+</div>
+
+<div class="tool">
+  <h2>ðŸ–¼ï¸ Ø¥Ø²Ø§Ù„Ø© Ø®Ù„ÙÙŠØ© Ø§Ù„ØµÙˆØ±Ø©</h2>
+  <div class="upload-area" id="uploadArea">
+    <div class="upload-content">
+      <div class="upload-icon">ðŸ“</div>
+      <p>Ø§Ø¶ØºØ· Ù‡Ù†Ø§ Ø£Ùˆ Ø§Ø³Ø­Ø¨ Ø§Ù„ØµÙˆØ±Ø©</p>
+      <p class="upload-hint">PNG, JPG, WEBP (Ø­ØªÙ‰ 16MB)</p>
+    </div>
+    <input type="file" id="imageInput" accept="image/*" hidden>
+  </div>
+  
+  <div class="options" id="processingOptions" style="display: none;">
+    <h3>Ø®ÙŠØ§Ø±Ø§Øª Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©</h3>
+    <div class="option-group">
+      <label>Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©:</label>
+      <select id="methodSelect">
+        <option value="auto">ØªÙ„Ù‚Ø§Ø¦ÙŠ (Ø§Ù„Ø£ÙØ¶Ù„)</option>
+        <option value="rmbg">RMBG-1.4 Ø¹Ø§Ù„ÙŠ Ø§Ù„Ø¯Ù‚Ø©</option>
+        <option value="rembg">U2Net Ø³Ø±ÙŠØ¹</option>
+      </select>
+    </div>
+    
+    <div class="option-group">
+      <label>Ù†Ø¹ÙˆÙ…Ø© Ø§Ù„Ø­ÙˆØ§Ù:</label>
+      <input type="range" id="featherRadius" min="0" max="10" value="2">
+      <span id="featherValue">2</span>
+    </div>
+    
+    <div class="option-group">
+      <label>
+        <input type="checkbox" id="enhanceEdges" checked>
+        ØªØ­Ø³ÙŠÙ† Ø§Ù„Ø­ÙˆØ§Ù ÙˆØ§Ù„Ø´Ø¹Ø±
+      </label>
+    </div>
+    
+    <button onclick="processImage()" id="processBtn">Ù…Ø¹Ø§Ù„Ø¬Ø© Ø§Ù„ØµÙˆØ±Ø©</button>
+  </div>
+  
+  <div class="preview-container" id="previewContainer" style="display: none;">
+    <div class="image-comparison">
+      <div class="image-side">
+        <h4>Ø§Ù„ØµÙˆØ±Ø© Ø§Ù„Ø£ØµÙ„ÙŠØ©</h4>
+        <canvas id="originalCanvas"></canvas>
+      </div>
+      <div class="image-side">
+        <h4>Ø¨Ø¹Ø¯ Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ø®Ù„ÙÙŠØ©</h4>
+        <canvas id="resultCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <div class="progress-container" id="progressContainer" style="display: none;">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-text" id="progressText">Ø¬Ø§Ø±ÙŠ Ø§Ù„Ù…Ø¹Ø§Ù„Ø¬Ø©...</div>
+  </div>
+  
+  <div class="output" id="backgroundOutput"></div>
+  
+  <div class="result-actions" id="resultActions" style="display: none;">
+    <button onclick="downloadResult()" class="download-btn">ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØµÙˆØ±Ø©</button>
+    <button onclick="resetTool()" class="reset-btn">ØµÙˆØ±Ø© Ø¬Ø¯ÙŠØ¯Ø©</button>
+  </div>
 </div>
 
 <script src="script.js"></script>
