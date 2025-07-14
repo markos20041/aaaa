@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # Python Flask Implementation (Primary)
+  background-removal-python:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base  # Use GPU version, change to 'cpu-only' for CPU-only deployment
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - REMOVE_BG_API_KEY=${REMOVE_BG_API_KEY}
+      - ENABLE_REMOVE_BG_FALLBACK=${ENABLE_REMOVE_BG_FALLBACK:-false}
+      - REDIS_URL=redis://redis:6379
+      - MODEL_CACHE_DIR=/app/models
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+      - model-cache:/app/models
+    depends_on:
+      - redis
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - background-removal-net
+
+  # Node.js Express Implementation (Alternative)
+  background-removal-nodejs:
+    build:
+      context: .
+      dockerfile: Dockerfile.nodejs
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - REMOVE_BG_API_KEY=${REMOVE_BG_API_KEY}
+      - ENABLE_REMOVE_BG_FALLBACK=${ENABLE_REMOVE_BG_FALLBACK:-false}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./outputs:/app/outputs
+    restart: unless-stopped
+    networks:
+      - background-removal-net
+    profiles:
+      - nodejs  # Only start with --profile nodejs
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    networks:
+      - background-removal-net
+
+  # Nginx reverse proxy (production setup)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl:ro
+    depends_on:
+      - background-removal-python
+    restart: unless-stopped
+    networks:
+      - background-removal-net
+    profiles:
+      - production
+
+volumes:
+  model-cache:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  background-removal-net:
+    driver: bridge
+
+# Development override file
+# Create docker-compose.override.yml for development-specific settings
+---
+# docker-compose.override.yml (for development)
+version: '3.8'
+
+services:
+  background-removal-python:
+    build:
+      target: cpu-only  # Use CPU version for development
+    volumes:
+      - .:/app  # Mount source code for development
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+    command: ["python3", "-m", "flask", "run", "--host=0.0.0.0", "--port=5000", "--reload"]
+    deploy:
+      resources:
+        reservations:
+          devices: []  # Remove GPU requirement for development
+
+  background-removal-nodejs:
+    volumes:
+      - .:/app
+      - /app/node_modules  # Prevent overwriting node_modules
+    environment:
+      - NODE_ENV=development
+    command: ["npm", "run", "dev"]

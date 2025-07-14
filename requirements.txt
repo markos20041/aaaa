@@ -1,0 +1,40 @@
+# Core Flask dependencies
+Flask==2.3.3
+Flask-CORS==4.0.0
+Flask-Limiter==3.5.0
+Werkzeug==2.3.7
+
+# Image processing and ML
+torch>=2.0.0
+torchvision>=0.15.0
+transformers>=4.35.0
+Pillow>=10.0.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Background removal models
+timm>=0.9.7
+huggingface-hub>=0.17.0
+
+# API integrations
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Image optimization
+kornia>=0.7.0
+
+# Caching and background tasks
+redis>=5.0.0
+celery>=5.3.0
+
+# File handling
+python-multipart>=0.0.6
+
+# Optional: Remove.bg API fallback
+# removebg>=1.0.6
+
+# Development and testing
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0

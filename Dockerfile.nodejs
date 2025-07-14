@@ -1,0 +1,53 @@
+# Node.js Background Removal Service Dockerfile
+FROM node:18-alpine
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Install system dependencies for Sharp and image processing
+RUN apk add --no-cache \
+    vips-dev \
+    build-base \
+    python3 \
+    make \
+    g++ \
+    jpeg-dev \
+    png-dev \
+    tiff-dev \
+    webp-dev \
+    libheif-dev
+
+# Set work directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy application code
+COPY server.js ./
+COPY templates/ ./templates/
+
+# Create necessary directories
+RUN mkdir -p uploads outputs public
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001 -G nodejs
+
+# Change ownership of app directory
+RUN chown -R nodeuser:nodejs /app
+USER nodeuser
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+
+# Start the application
+CMD ["node", "server.js"]
