@@ -1,59 +1,181 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title> ÿ»Ìﬁ «·√œÊ«  «·„›Ìœ…</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Background Remover - Professional Tool</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-magic"></i> AI Background Remover</h1>
+            <p>Professional-grade background removal powered by advanced AI models</p>
+        </header>
 
-<h1>??  ÿ»Ìﬁ «·√œÊ«  «·„›Ìœ…</h1>
+        <div class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <h3>Drop your image here or click to upload</h3>
+                        <p>Supports PNG, JPG, JPEG, and WEBP files up to 16MB</p>
+                        <button class="btn btn-primary" id="uploadBtn">
+                            <i class="fas fa-plus"></i> Choose Image
+                        </button>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
 
-<div class="tool">
-  <h2>?? „Ê·œ ﬂ·„«  «·”—</h2>
-  <button onclick="generatePassword()"> Ê·Ìœ ﬂ·„… ”—</button>
-  <div class="output" id="passwordOutput"></div>
-</div>
+            <!-- Settings Section -->
+            <div class="settings-section" id="settingsSection" style="display: none;">
+                <div class="settings-card">
+                    <h3><i class="fas fa-cog"></i> Processing Options</h3>
+                    
+                    <div class="setting-group">
+                        <label for="modelSelect">AI Model:</label>
+                        <select id="modelSelect" class="form-control">
+                            <option value="u2net">U-2-Net (Best Overall)</option>
+                            <option value="u2net_human_seg">U-2-Net Human (People)</option>
+                            <option value="silueta">Silueta (Fast)</option>
+                            <option value="isnet-general-use">ISNet (High Quality)</option>
+                        </select>
+                        <small>Choose the model that best fits your image type</small>
+                    </div>
 
-<div class="tool">
-  <h2>?? «·Õ«”»…</h2>
-  <input type="text" id="calcInput" placeholder="«ﬂ » «·⁄„·Ì… „À· 5+10*2">
-  <button onclick="calculate()">«Õ”»</button>
-  <div class="output" id="calcOutput"></div>
-</div>
+                    <div class="setting-group">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="enhanceEdges" checked>
+                            <label for="enhanceEdges">
+                                <i class="fas fa-sparkles"></i> Enhance Edges
+                            </label>
+                        </div>
+                        <small>Improves hair and detail preservation</small>
+                    </div>
 
-<div class="tool">
-  <h2>?? „⁄«Ì—… «·√·Ê«‰</h2>
-  <input type="color" id="colorPicker" onchange="showColor()">
-  <div class="output" id="colorOutput">«Œ — ·Ê‰«</div>
-</div>
+                    <div class="setting-group">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="alphaMatting">
+                            <label for="alphaMatting">
+                                <i class="fas fa-layer-group"></i> Alpha Matting
+                            </label>
+                        </div>
+                        <small>Advanced edge refinement (slower but better quality)</small>
+                    </div>
 
-<div class="tool">
-  <h2>?? ⁄ﬂ” «·√Õ—›</h2>
-  <input type="text" id="reverseInput" placeholder="«ﬂ » ‰’«">
-  <button onclick="reverseText()">«⁄ﬂ” «·‰’</button>
-  <div class="output" id="reverseOutput"></div>
-</div>
+                    <button class="btn btn-success btn-process" id="processBtn">
+                        <i class="fas fa-magic"></i> Remove Background
+                    </button>
+                </div>
+            </div>
 
-<div class="tool">
-  <h2>??  ÕÊÌ· ≈·Ï Base64</h2>
-  <input type="text" id="base64Input" placeholder="«ﬂ » ‰’«">
-  <button onclick="convertToBase64()"> ÕÊÌ·</button>
-  <div class="output" id="base64Output"></div>
-</div>
+            <!-- Preview Section -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <div class="image-container">
+                    <div class="image-comparison">
+                        <div class="image-before">
+                            <h4>Original</h4>
+                            <img id="originalImage" alt="Original">
+                        </div>
+                        <div class="image-after">
+                            <h4>Background Removed</h4>
+                            <div class="result-container">
+                                <img id="resultImage" alt="Result">
+                                <div class="transparency-bg"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-<div class="tool">
-  <h2>?? ⁄œ«œ «·ﬂ·„« </h2>
-  <textarea id="wordCountInput" rows="4" placeholder="«ﬂ » ‰’« Â‰«"></textarea>
-  <button onclick="countWords()">⁄œœ «·ﬂ·„« </button>
-  <div class="output" id="wordCountOutput"></div>
-</div>
+                <!-- Result Actions -->
+                <div class="result-actions">
+                    <button class="btn btn-primary" id="downloadBtn">
+                        <i class="fas fa-download"></i> Download PNG
+                    </button>
+                    <button class="btn btn-secondary" id="newImageBtn">
+                        <i class="fas fa-plus"></i> Process New Image
+                    </button>
+                    <button class="btn btn-info" id="editBtn">
+                        <i class="fas fa-edit"></i> Fine-tune Result
+                    </button>
+                </div>
 
-<div class="tool">
-  <h2>? «·”«⁄…</h2>
-  <div class="output" id="clockOutput">--:--:--</div>
-</div>
+                <!-- Processing Stats -->
+                <div class="stats-card" id="statsCard" style="display: none;">
+                    <h4><i class="fas fa-chart-line"></i> Processing Stats</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Processing Time:</span>
+                            <span class="stat-value" id="processingTime">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Model Used:</span>
+                            <span class="stat-value" id="modelUsed">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Image Size:</span>
+                            <span class="stat-value" id="imageSize">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-<script src="script.js"></script>
+            <!-- Loading Section -->
+            <div class="loading-section" id="loadingSection" style="display: none;">
+                <div class="loading-card">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                    </div>
+                    <h3>Processing your image...</h3>
+                    <p id="loadingText">Applying AI magic to remove the background</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Section (Hidden by default) -->
+            <div class="edit-section" id="editSection" style="display: none;">
+                <div class="edit-card">
+                    <h3><i class="fas fa-palette"></i> Fine-tune Your Result</h3>
+                    
+                    <div class="edit-tools">
+                        <button class="btn btn-tool" id="brushTool" data-tool="brush">
+                            <i class="fas fa-paint-brush"></i> Restore
+                        </button>
+                        <button class="btn btn-tool" id="eraseTool" data-tool="erase">
+                            <i class="fas fa-eraser"></i> Remove
+                        </button>
+                        <div class="brush-size">
+                            <label>Brush Size:</label>
+                            <input type="range" id="brushSize" min="5" max="50" value="15">
+                            <span id="brushSizeValue">15px</span>
+                        </div>
+                    </div>
+
+                    <canvas id="editCanvas" style="display: none;"></canvas>
+                    
+                    <div class="edit-actions">
+                        <button class="btn btn-success" id="applyEdits">
+                            <i class="fas fa-check"></i> Apply Changes
+                        </button>
+                        <button class="btn btn-secondary" id="cancelEdits">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by advanced AI models including U-2-Net, ISNet, and more</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
