@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Background Removal - Professional Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .drag-drop-area {
+            border: 2px dashed #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        .drag-drop-area.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .comparison-slider {
+            position: relative;
+            overflow: hidden;
+        }
+        .before-after-container {
+            position: relative;
+            display: inline-block;
+            margin: 0 auto;
+        }
+        .before-after-container img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        .before-after-container .after-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            overflow: hidden;
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 4px;
+            height: 100%;
+            background: #3b82f6;
+            cursor: ew-resize;
+            transform: translateX(-50%);
+        }
+        .slider-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background: #3b82f6;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: ew-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-magic text-2xl text-blue-600"></i>
+                    <h1 class="text-2xl font-bold text-gray-900">AI Background Removal</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">Powered by RMBG 2.0</span>
+                    <div id="status-indicator" class="flex items-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Main Interface -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Upload & Controls Panel -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Upload Area -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Upload Image</h2>
+                    <div id="upload-area" class="drag-drop-area rounded-lg p-8 text-center cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-2">Drag & drop your image here</p>
+                        <p class="text-sm text-gray-500 mb-4">or click to browse</p>
+                        <input type="file" id="file-input" class="hidden" accept="image/*" multiple>
+                        <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">
+                            Choose Files
+                        </button>
+                    </div>
+                    <div class="mt-4 text-xs text-gray-500">
+                        Supported formats: PNG, JPG, JPEG, WEBP • Max size: 50MB
+                    </div>
+                </div>
+
+                <!-- Processing Options -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Processing Options</h3>
+                    
+                    <!-- Model Selection -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">AI Model</label>
+                        <select id="model-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="rmbg2">RMBG 2.0 (Recommended)</option>
+                            <option value="rembg">RemBG U2Net (Fast)</option>
+                        </select>
+                    </div>
+
+                    <!-- Edge Enhancement -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Edge Enhancement</label>
+                            <input type="checkbox" id="enhance-edges" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Feathering -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Edge Feathering: <span id="feather-value">2</span>px
+                        </label>
+                        <input type="range" id="feather-slider" min="0" max="10" value="2" class="w-full">
+                    </div>
+
+                    <!-- Alpha Matting -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Alpha Matting</label>
+                            <input type="checkbox" id="alpha-matting" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        </div>
+                        <p class="text-xs text-gray-500">Better for semi-transparent objects</p>
+                    </div>
+
+                    <!-- Post Processing -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-sm font-medium text-gray-700">Post Processing</label>
+                            <input type="checkbox" id="post-process" checked class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Process Button -->
+                    <button id="process-btn" class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="process-text">Remove Background</span>
+                        <i id="process-spinner" class="fas fa-spinner loading-spinner ml-2 hidden"></i>
+                    </button>
+                </div>
+
+                <!-- Batch Processing -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Batch Processing</h3>
+                    <div id="batch-queue" class="space-y-2 mb-4 max-h-40 overflow-y-auto">
+                        <!-- Batch items will be added here -->
+                    </div>
+                    <button id="process-batch-btn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition disabled:opacity-50" disabled>
+                        Process Batch (<span id="batch-count">0</span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview & Results Panel -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Before/After Comparison -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Preview</h3>
+                        <div class="flex space-x-2">
+                            <button id="view-original" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+                                Original
+                            </button>
+                            <button id="view-result" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
+                                Result
+                            </button>
+                            <button id="view-comparison" class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">
+                                Compare
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="preview-container" class="relative bg-gray-100 rounded-lg min-h-96 flex items-center justify-center">
+                        <div id="no-image-placeholder" class="text-center text-gray-500">
+                            <i class="fas fa-image text-6xl mb-4 opacity-50"></i>
+                            <p class="text-lg">Upload an image to get started</p>
+                        </div>
+                        
+                        <!-- Comparison View -->
+                        <div id="comparison-view" class="before-after-container hidden">
+                            <img id="before-image" src="" alt="Original" class="max-w-full h-auto">
+                            <div class="after-image">
+                                <img id="after-image" src="" alt="Result" class="max-w-full h-auto">
+                            </div>
+                            <div class="slider-handle">
+                                <div class="slider-button">
+                                    <i class="fas fa-arrows-alt-h text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Single Image View -->
+                        <img id="single-image-view" class="max-w-full h-auto rounded-lg hidden" alt="Preview">
+                    </div>
+                </div>
+
+                <!-- Processing Info -->
+                <div id="processing-info" class="bg-white rounded-lg shadow-md p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Processing Results</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <div class="text-2xl font-bold text-blue-600" id="processing-time">-</div>
+                            <div class="text-sm text-gray-600">Processing Time</div>
+                        </div>
+                        <div class="bg-green-50 rounded-lg p-4">
+                            <div class="text-2xl font-bold text-green-600" id="model-used">-</div>
+                            <div class="text-sm text-gray-600">Model Used</div>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-4">
+                            <div class="text-2xl font-bold text-purple-600" id="image-size">-</div>
+                            <div class="text-sm text-gray-600">Image Size</div>
+                        </div>
+                        <div class="bg-orange-50 rounded-lg p-4">
+                            <div class="text-2xl font-bold text-orange-600" id="memory-used">-</div>
+                            <div class="text-sm text-gray-600">Memory Used</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Section -->
+                <div id="download-section" class="bg-white rounded-lg shadow-md p-6 hidden">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Download Results</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <button id="download-png" class="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition flex items-center space-x-2">
+                            <i class="fas fa-download"></i>
+                            <span>Download PNG</span>
+                        </button>
+                        <button id="copy-image" class="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition flex items-center space-x-2">
+                            <i class="fas fa-copy"></i>
+                            <span>Copy to Clipboard</span>
+                        </button>
+                        <button id="share-image" class="bg-green-600 text-white px-6 py-3 rounded-md hover:bg-green-700 transition flex items-center space-x-2">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Modal -->
+    <div id="progress-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <div class="text-center">
+                <i class="fas fa-magic text-4xl text-blue-600 mb-4"></i>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Processing Image</h3>
+                <p class="text-gray-600 mb-6">AI is removing the background...</p>
+                <div class="w-full bg-gray-200 rounded-full h-2 mb-4">
+                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p id="progress-text" class="text-sm text-gray-500">Initializing...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+
+    <script>
+        // Global variables
+        let originalImage = null;
+        let resultImage = null;
+        let currentFiles = [];
+        let isComparisonMode = true;
+        let sliderPosition = 50;
+
+        // DOM elements
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const processBtn = document.getElementById('process-btn');
+        const progressModal = document.getElementById('progress-modal');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const batchQueue = document.getElementById('batch-queue');
+        const batchCount = document.getElementById('batch-count');
+        const processBatchBtn = document.getElementById('process-batch-btn');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            setupSliderControls();
+            checkServerHealth();
+        });
+
+        function setupEventListeners() {
+            // File upload events
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleFileDrop);
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Process button
+            processBtn.addEventListener('click', processCurrentImage);
+
+            // View mode buttons
+            document.getElementById('view-original').addEventListener('click', () => setViewMode('original'));
+            document.getElementById('view-result').addEventListener('click', () => setViewMode('result'));
+            document.getElementById('view-comparison').addEventListener('click', () => setViewMode('comparison'));
+
+            // Download buttons
+            document.getElementById('download-png').addEventListener('click', downloadResult);
+            document.getElementById('copy-image').addEventListener('click', copyToClipboard);
+
+            // Feather slider
+            document.getElementById('feather-slider').addEventListener('input', function() {
+                document.getElementById('feather-value').textContent = this.value;
+            });
+
+            // Batch processing
+            processBatchBtn.addEventListener('click', processBatch);
+        }
+
+        function setupSliderControls() {
+            const sliderHandle = document.querySelector('.slider-handle');
+            const comparisonView = document.getElementById('comparison-view');
+            let isDragging = false;
+
+            if (sliderHandle) {
+                sliderHandle.addEventListener('mousedown', startDragging);
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', stopDragging);
+            }
+
+            function startDragging(e) {
+                isDragging = true;
+                e.preventDefault();
+            }
+
+            function drag(e) {
+                if (!isDragging || !comparisonView.classList.contains('visible')) return;
+                
+                const rect = comparisonView.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                
+                updateSliderPosition(percentage);
+            }
+
+            function stopDragging() {
+                isDragging = false;
+            }
+
+            function updateSliderPosition(percentage) {
+                sliderPosition = percentage;
+                const afterImage = document.querySelector('.after-image');
+                const sliderHandle = document.querySelector('.slider-handle');
+                
+                if (afterImage && sliderHandle) {
+                    afterImage.style.width = percentage + '%';
+                    sliderHandle.style.left = percentage + '%';
+                }
+            }
+        }
+
+        async function checkServerHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                updateStatusIndicator(data.status === 'healthy');
+            } catch (error) {
+                updateStatusIndicator(false);
+                showToast('Server connection failed', 'error');
+            }
+        }
+
+        function updateStatusIndicator(isHealthy) {
+            const indicator = document.getElementById('status-indicator');
+            const dot = indicator.querySelector('div');
+            const text = indicator.querySelector('span');
+            
+            if (isHealthy) {
+                dot.className = 'w-3 h-3 bg-green-500 rounded-full';
+                text.textContent = 'Ready';
+            } else {
+                dot.className = 'w-3 h-3 bg-red-500 rounded-full';
+                text.textContent = 'Offline';
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleFileDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            handleFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            handleFiles(files);
+        }
+
+        function handleFiles(files) {
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            
+            if (imageFiles.length === 0) {
+                showToast('Please select valid image files', 'error');
+                return;
+            }
+
+            if (imageFiles.length === 1) {
+                loadSingleImage(imageFiles[0]);
+            } else {
+                addToBatch(imageFiles);
+            }
+        }
+
+        function loadSingleImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalImage = e.target.result;
+                currentFiles = [file];
+                
+                // Show original image
+                displayImage(originalImage, 'original');
+                showImagePreview();
+                
+                // Enable process button
+                processBtn.disabled = false;
+                
+                showToast('Image loaded successfully', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function addToBatch(files) {
+            files.forEach(file => {
+                const batchItem = createBatchItem(file);
+                batchQueue.appendChild(batchItem);
+            });
+            
+            currentFiles.push(...files);
+            updateBatchCount();
+            showToast(`Added ${files.length} images to batch`, 'info');
+        }
+
+        function createBatchItem(file) {
+            const div = document.createElement('div');
+            div.className = 'flex items-center justify-between p-2 bg-gray-50 rounded-md';
+            div.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-image text-gray-400"></i>
+                    <span class="text-sm text-gray-700 truncate">${file.name}</span>
+                </div>
+                <button onclick="removeBatchItem(this)" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            div.dataset.filename = file.name;
+            return div;
+        }
+
+        function removeBatchItem(button) {
+            const item = button.closest('div[data-filename]');
+            const filename = item.dataset.filename;
+            
+            // Remove from currentFiles array
+            currentFiles = currentFiles.filter(file => file.name !== filename);
+            
+            // Remove from DOM
+            item.remove();
+            updateBatchCount();
+        }
+
+        function updateBatchCount() {
+            const count = currentFiles.length;
+            batchCount.textContent = count;
+            processBatchBtn.disabled = count === 0;
+        }
+
+        function displayImage(imageSrc, type) {
+            if (type === 'original') {
+                document.getElementById('before-image').src = imageSrc;
+                if (isComparisonMode) {
+                    document.getElementById('single-image-view').src = imageSrc;
+                }
+            } else if (type === 'result') {
+                document.getElementById('after-image').src = imageSrc;
+                if (!isComparisonMode) {
+                    document.getElementById('single-image-view').src = imageSrc;
+                }
+            }
+        }
+
+        function showImagePreview() {
+            document.getElementById('no-image-placeholder').classList.add('hidden');
+            setViewMode('original');
+        }
+
+        function setViewMode(mode) {
+            const comparisonView = document.getElementById('comparison-view');
+            const singleView = document.getElementById('single-image-view');
+            
+            // Update button states
+            document.querySelectorAll('[id^="view-"]').forEach(btn => {
+                btn.className = 'px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition';
+            });
+            document.getElementById(`view-${mode}`).className = 'px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition';
+            
+            if (mode === 'comparison' && originalImage && resultImage) {
+                comparisonView.classList.remove('hidden');
+                comparisonView.classList.add('visible');
+                singleView.classList.add('hidden');
+                isComparisonMode = true;
+            } else {
+                comparisonView.classList.add('hidden');
+                comparisonView.classList.remove('visible');
+                singleView.classList.remove('hidden');
+                isComparisonMode = false;
+                
+                if (mode === 'original' && originalImage) {
+                    singleView.src = originalImage;
+                } else if (mode === 'result' && resultImage) {
+                    singleView.src = resultImage;
+                }
+            }
+        }
+
+        async function processCurrentImage() {
+            if (!currentFiles.length) {
+                showToast('Please select an image first', 'error');
+                return;
+            }
+
+            const file = currentFiles[0];
+            showProgressModal();
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('model_type', document.getElementById('model-select').value);
+                formData.append('enhance_edges', document.getElementById('enhance-edges').checked);
+                formData.append('feather_amount', document.getElementById('feather-slider').value);
+                formData.append('alpha_matting', document.getElementById('alpha-matting').checked);
+                formData.append('post_process', document.getElementById('post-process').checked);
+
+                updateProgress(30, 'Processing image...');
+
+                const response = await fetch('/remove-background', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                updateProgress(70, 'Finalizing...');
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                resultImage = url;
+                displayImage(resultImage, 'result');
+                
+                // Update processing info
+                updateProcessingInfo(response.headers);
+                
+                updateProgress(100, 'Complete!');
+                
+                setTimeout(() => {
+                    hideProgressModal();
+                    setViewMode('comparison');
+                    showProcessingResults();
+                    showToast('Background removed successfully!', 'success');
+                }, 500);
+
+            } catch (error) {
+                hideProgressModal();
+                showToast(`Error: ${error.message}`, 'error');
+                console.error('Processing error:', error);
+            }
+        }
+
+        async function processBatch() {
+            if (!currentFiles.length) {
+                showToast('No files in batch', 'error');
+                return;
+            }
+
+            showProgressModal();
+            
+            try {
+                const formData = new FormData();
+                currentFiles.forEach(file => {
+                    formData.append('files', file);
+                });
+                formData.append('model_type', document.getElementById('model-select').value);
+                formData.append('enhance_edges', document.getElementById('enhance-edges').checked);
+                formData.append('feather_amount', document.getElementById('feather-slider').value);
+                formData.append('alpha_matting', document.getElementById('alpha-matting').checked);
+                formData.append('post_process', document.getElementById('post-process').checked);
+
+                updateProgress(50, `Processing ${currentFiles.length} images...`);
+
+                const response = await fetch('/batch-remove-background', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                updateProgress(100, 'Batch processing complete!');
+
+                setTimeout(() => {
+                    hideProgressModal();
+                    showBatchResults(result.results);
+                }, 500);
+
+            } catch (error) {
+                hideProgressModal();
+                showToast(`Batch processing error: ${error.message}`, 'error');
+            }
+        }
+
+        function showBatchResults(results) {
+            const successCount = results.filter(r => r.success).length;
+            const failCount = results.length - successCount;
+            
+            showToast(`Batch complete: ${successCount} successful, ${failCount} failed`, 
+                      failCount > 0 ? 'warning' : 'success');
+        }
+
+        function updateProcessingInfo(headers) {
+            document.getElementById('processing-time').textContent = 
+                parseFloat(headers.get('X-Processing-Time') || 0).toFixed(2) + 's';
+            document.getElementById('model-used').textContent = 
+                headers.get('X-Model-Used') || 'Unknown';
+            document.getElementById('image-size').textContent = 
+                headers.get('X-Image-Size') || 'Unknown';
+            document.getElementById('memory-used').textContent = 
+                parseFloat(headers.get('X-Memory-Used') || 0).toFixed(1) + 'MB';
+        }
+
+        function showProcessingResults() {
+            document.getElementById('processing-info').classList.remove('hidden');
+            document.getElementById('download-section').classList.remove('hidden');
+        }
+
+        function showProgressModal() {
+            progressModal.classList.remove('hidden');
+            progressModal.classList.add('flex');
+            updateProgress(0, 'Initializing...');
+        }
+
+        function hideProgressModal() {
+            progressModal.classList.add('hidden');
+            progressModal.classList.remove('flex');
+        }
+
+        function updateProgress(percentage, text) {
+            progressBar.style.width = percentage + '%';
+            progressText.textContent = text;
+        }
+
+        function downloadResult() {
+            if (!resultImage) {
+                showToast('No processed image to download', 'error');
+                return;
+            }
+
+            const link = document.createElement('a');
+            link.href = resultImage;
+            link.download = 'background-removed.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast('Download started', 'success');
+        }
+
+        async function copyToClipboard() {
+            if (!resultImage) {
+                showToast('No processed image to copy', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(resultImage);
+                const blob = await response.blob();
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                showToast('Image copied to clipboard', 'success');
+            } catch (error) {
+                showToast('Failed to copy image', 'error');
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                warning: 'bg-yellow-500',
+                info: 'bg-blue-500'
+            };
+            
+            toast.className = `${colors[type]} text-white px-4 py-3 rounded-md shadow-lg transform transition-all duration-300 translate-x-full`;
+            toast.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.getElementById('toast-container').appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-x-full');
+            }, 100);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                toast.classList.add('translate-x-full');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
