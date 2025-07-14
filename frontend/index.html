@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Background Removal Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-magic"></i> AI Background Removal</h1>
+                <p>Remove backgrounds from images with AI precision</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-card">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                            <h3>Drop your image here</h3>
+                            <p>or <span class="browse-link">browse files</span></p>
+                            <small>Supports JPG, PNG up to 16MB</small>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                    </div>
+
+                    <!-- Model Selection -->
+                    <div class="model-selection">
+                        <h4><i class="fas fa-cog"></i> AI Model Selection</h4>
+                        <div class="model-options">
+                            <label class="model-option">
+                                <input type="radio" name="model" value="general" checked>
+                                <div class="option-content">
+                                    <strong>General Purpose</strong>
+                                    <span>Best for most images</span>
+                                </div>
+                            </label>
+                            <label class="model-option">
+                                <input type="radio" name="model" value="human">
+                                <div class="option-content">
+                                    <strong>Human Focused</strong>
+                                    <span>Optimized for people</span>
+                                </div>
+                            </label>
+                            <label class="model-option">
+                                <input type="radio" name="model" value="object">
+                                <div class="option-content">
+                                    <strong>Object Detection</strong>
+                                    <span>Best for products</span>
+                                </div>
+                            </label>
+                            <label class="model-option">
+                                <input type="radio" name="model" value="advanced">
+                                <div class="option-content">
+                                    <strong>Advanced</strong>
+                                    <span>Highest quality</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Processing Options -->
+                    <div class="processing-options">
+                        <label class="checkbox-option">
+                            <input type="checkbox" id="enhanceEdges" checked>
+                            <span class="checkmark"></span>
+                            <div class="option-content">
+                                <strong>Enhanced Edge Processing</strong>
+                                <span>Better handling of hair and soft edges</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Processing Section -->
+            <section class="processing-section" id="processingSection" style="display: none;">
+                <div class="processing-card">
+                    <div class="processing-animation">
+                        <div class="spinner"></div>
+                        <h3>Processing your image...</h3>
+                        <p id="processingStatus">Analyzing image with AI</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-card">
+                    <div class="image-comparison">
+                        <div class="comparison-container">
+                            <div class="image-panel">
+                                <h4>Original</h4>
+                                <div class="image-container">
+                                    <img id="originalImage" alt="Original">
+                                </div>
+                            </div>
+                            <div class="image-panel">
+                                <h4>Background Removed</h4>
+                                <div class="image-container result-container">
+                                    <img id="resultImage" alt="Result">
+                                    <div class="transparency-bg"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Tools -->
+                    <div class="edit-tools" id="editTools">
+                        <h4><i class="fas fa-edit"></i> Fine-tune Result</h4>
+                        <div class="tool-buttons">
+                            <button class="tool-btn" id="brushTool" data-tool="add">
+                                <i class="fas fa-paint-brush"></i>
+                                <span>Restore</span>
+                            </button>
+                            <button class="tool-btn" id="eraserTool" data-tool="remove">
+                                <i class="fas fa-eraser"></i>
+                                <span>Remove</span>
+                            </button>
+                            <div class="brush-size">
+                                <label>Brush Size:</label>
+                                <input type="range" id="brushSize" min="5" max="50" value="15">
+                                <span id="brushSizeValue">15px</span>
+                            </div>
+                        </div>
+                        <div class="edit-actions">
+                            <button class="btn btn-secondary" id="resetEdits">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                            <button class="btn btn-primary" id="applyEdits">
+                                <i class="fas fa-check"></i> Apply Changes
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Download Section -->
+                    <div class="download-section">
+                        <div class="download-info">
+                            <div class="processing-stats">
+                                <span><i class="fas fa-clock"></i> Processing time: <strong id="processingTime">-</strong></span>
+                                <span><i class="fas fa-brain"></i> Model used: <strong id="modelUsed">-</strong></span>
+                            </div>
+                        </div>
+                        <div class="download-actions">
+                            <button class="btn btn-secondary" id="processAnother">
+                                <i class="fas fa-plus"></i> Process Another
+                            </button>
+                            <button class="btn btn-primary" id="downloadBtn">
+                                <i class="fas fa-download"></i> Download PNG
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Error Section -->
+            <section class="error-section" id="errorSection" style="display: none;">
+                <div class="error-card">
+                    <i class="fas fa-exclamation-triangle error-icon"></i>
+                    <h3>Something went wrong</h3>
+                    <p id="errorMessage">An error occurred while processing your image.</p>
+                    <button class="btn btn-primary" id="tryAgainBtn">
+                        <i class="fas fa-refresh"></i> Try Again
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Powered by AI • Built with ❤️ for creators</p>
+        </footer>
+    </div>
+
+    <!-- Canvas for editing (hidden) -->
+    <canvas id="editCanvas" style="display: none;"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
